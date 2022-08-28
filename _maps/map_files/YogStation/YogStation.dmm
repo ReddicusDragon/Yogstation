@@ -25981,6 +25981,22 @@
 /obj/item/hand_labeler,
 /turf/open/floor/plasteel/vaporwave,
 /area/storage/art)
+"gbX" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/machinery/button/door{
+	id = "genedesk";
+	name = "Genetics Desk Shutters Control";
+	pixel_x = 28;
+	req_access_txt = "9"
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 4
+	},
+/obj/item/twohanded/required/kirbyplants/random,
+/turf/open/floor/plasteel/white,
+/area/medical/genetics)
 "gbY" = (
 /obj/effect/turf_decal/trimline/brown/filled/warning{
 	dir = 4
@@ -55394,21 +55410,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
-"sZb" = (
-/obj/machinery/light{
-	dir = 4
-	},
-/obj/machinery/button/door{
-	id = "genedesk";
-	name = "Genetics Desk Shutters Control";
-	pixel_x = 28;
-	req_access_txt = "9"
-	},
-/obj/effect/turf_decal/trimline/purple/filled/line{
-	dir = 4
-	},
-/turf/open/floor/plasteel/white,
-/area/medical/genetics)
 "sZn" = (
 /obj/structure/table/wood,
 /obj/item/stamp/captain{
@@ -109788,7 +109789,7 @@ rrG
 nYV
 xYx
 xIv
-sZb
+gbX
 hcW
 lAD
 kYK
