@@ -419,7 +419,7 @@
 
 /obj/structure/sign/poster/contraband/busty_backdoor_xeno_babes_6
 	name = "Busty Backdoor Xeno Babes 6"
-	desc = "Get a load, or give, of these all natural Xenos!"
+	desc = "Get a load of these all natural Xenos!"
 	icon_state = "poster36"
 
 /obj/structure/sign/poster/contraband/robust_softdrinks
