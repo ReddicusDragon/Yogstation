@@ -120,7 +120,6 @@
 	ADD_TRAIT(H, TRAIT_IGNOREDAMAGESLOWDOWN, "martial")
 	ADD_TRAIT(H, TRAIT_NO_STUN_WEAPONS, "martial")
 	ADD_TRAIT(H, TRAIT_NODISMEMBER, "martial")
-	ADD_TRAIT(H, TRAIT_STUNIMMUNE, "martial")///mainly so emps don't end you instantly, they still do damage though
 	H.throw_alert("dash_charge", /atom/movable/screen/alert/ipcmartial, dashes+1)
 	usr.click_intercept = src //probably breaks something, don't know what though
 	H.dna.species.GiveSpeciesFlight(H)//because... c'mon
@@ -136,7 +135,6 @@
 	REMOVE_TRAIT(H, TRAIT_IGNOREDAMAGESLOWDOWN, "martial")
 	REMOVE_TRAIT(H, TRAIT_NO_STUN_WEAPONS, "martial")
 	REMOVE_TRAIT(H, TRAIT_NODISMEMBER, "martial")
-	REMOVE_TRAIT(H, TRAIT_STUNIMMUNE, "martial")
 	deltimer(dash_timer)
 	H.clear_alert("dash_charge")
 	usr.click_intercept = null //un-breaks the thing that i don't know is broken
