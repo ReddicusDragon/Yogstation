@@ -10,6 +10,7 @@
 	canmove = TRUE
 	density = FALSE		//Thought I couldn't fix this one easily, phew
 	movedelay = 4
+	var/move_sound = 'sound/effects/roll.ogg'
 
 /obj/vehicle/ridden/wheelchair/Initialize()
 	. = ..()
@@ -22,7 +23,7 @@
 
 /obj/vehicle/ridden/wheelchair/ComponentInitialize()	//Since it's technically a chair I want it to have chair properties
 	. = ..()
-	AddComponent(/datum/component/simple_rotation,ROTATION_ALTCLICK | ROTATION_CLOCKWISE, CALLBACK(src, .proc/can_user_rotate),CALLBACK(src, .proc/can_be_rotated),null)
+	AddComponent(/datum/component/simple_rotation,ROTATION_ALTCLICK | ROTATION_CLOCKWISE, CALLBACK(src, PROC_REF(can_user_rotate)),CALLBACK(src, PROC_REF(can_be_rotated)),null)
 
 /obj/vehicle/ridden/wheelchair/obj_destruction(damage_flag)
 	new /obj/item/stack/rods(drop_location(), 1)
@@ -59,7 +60,7 @@
 /obj/vehicle/ridden/wheelchair/Moved()
 	. = ..()
 	cut_overlays()
-	playsound(src, 'sound/effects/roll.ogg', 75, TRUE)
+	playsound(src, move_sound, 75, TRUE)
 	if(has_buckled_mobs())
 		handle_rotation_overlayed()
 
@@ -179,7 +180,7 @@
 /datum/action/vehicle/ridden/wheelchair/explosive/kaboom
 	name = "Ding!"
 	desc = "Ring the cute little bell on your wheelchair."
-	icon_icon = 'icons/obj/bell.dmi'
+	button_icon = 'icons/obj/bell.dmi'
 	button_icon_state = "bell"
 	var/exploding = FALSE
 	var/explode_delay = 2 SECONDS

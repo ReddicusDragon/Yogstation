@@ -25,6 +25,7 @@
 		<a href='?src=[REF(src)];[HrefToken()];makeAntag=abductors'>Make Abductor Team (Requires Ghosts)</a><br>
 		<a href='?src=[REF(src)];[HrefToken()];makeAntag=revenant'>Make Revenant (Requires Ghost)</a><br>
 		<a href='?src=[REF(src)];[HrefToken()];makeAntag=shadowling'>Make Shadowling</a><br>
+		<a href='?src=[REF(src)];[HrefToken()];makeAntag=darkspawn'>Make Darkspawn</a><br>
 		<a href='?src=[REF(src)];[HrefToken()];makeAntag=vampire'>Make Vampire</a><br>
 		<a href='?src=[REF(src)];[HrefToken()];makeAntag=infiltrator'>Make Infiltration Team (Requires Ghosts)</a>
 		"}
@@ -352,7 +353,6 @@
 
 	equipAntagOnDummy(mannequin, ert)
 
-	COMPILE_OVERLAYS(mannequin)
 	CHECK_TICK
 	var/icon/preview_icon = icon('icons/effects/effects.dmi', "nothing")
 	preview_icon.Scale(48+32, 16+32)
@@ -384,9 +384,9 @@
 		ertemplate = new /datum/ert/official
 
 	var/list/settings = list(
-		"preview_callback" = CALLBACK(src, .proc/makeERTPreviewIcon),
+		"preview_callback" = CALLBACK(src, PROC_REF(makeERTPreviewIcon)),
 		"mainsettings" = list(
-		"template" = list("desc" = "Template", "callback" = CALLBACK(src, .proc/makeERTTemplateModified), "type" = "datum", "path" = "/datum/ert", "subtypesonly" = TRUE, "value" = ertemplate.type),
+		"template" = list("desc" = "Template", "callback" = CALLBACK(src, PROC_REF(makeERTTemplateModified)), "type" = "datum", "path" = "/datum/ert", "subtypesonly" = TRUE, "value" = ertemplate.type),
 		"teamsize" = list("desc" = "Team Size", "type" = "number", "value" = ertemplate.teamsize),
 		"mission" = list("desc" = "Mission", "type" = "string", "value" = ertemplate.mission),
 		"polldesc" = list("desc" = "Ghost poll description", "type" = "string", "value" = ertemplate.polldesc),
@@ -451,7 +451,7 @@
 
 				//Spawn the body
 				var/mob/living/carbon/human/ERTOperative = new ertemplate.mobtype(spawnloc)
-				chosen_candidate.client.prefs.copy_to(ERTOperative)
+				chosen_candidate.client.prefs.apply_prefs_to(ERTOperative)
 				ERTOperative.key = chosen_candidate.key
 
 				if(ertemplate.enforce_human || !(ERTOperative.dna.species.changesource_flags & ERT_SPAWN)) // Don't want any exploding plasmemes
@@ -480,12 +480,12 @@
 			//Open the Armory doors
 			if(ertemplate.opendoors)
 				for(var/obj/machinery/door/poddoor/ert/door in GLOB.airlocks)
-					INVOKE_ASYNC(door, /obj/machinery/door/poddoor.proc/open)
+					INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door/poddoor, open))
 
 			//Open the Mech Bay
 			if(ertemplate.openmech)
 				for(var/obj/machinery/door/poddoor/deathsquad/door in GLOB.airlocks)
-					INVOKE_ASYNC(door, /obj/machinery/door/poddoor.proc/open)
+					INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door/poddoor, open))
 			return TRUE
 		else
 			return FALSE
@@ -500,7 +500,7 @@
 		ertemplate = new /datum/ert/uplinked
 
 	var/list/settings = list(
-		"preview_callback" = CALLBACK(src, .proc/makeERTPreviewIcon),
+		"preview_callback" = CALLBACK(src, PROC_REF(makeERTPreviewIcon)),
 		"mainsettings" = list(
 		"template" = list("desc" = "Template", "type" = "datum", "path" = "/datum/ert/uplinked", "value" = "/datum/ert/uplinked"),
 		"uplink" = list("desc" = "Uplink Type", "type" = "datum", "path" = "/obj/item/ntuplink", "subtypesonly" = TRUE, "value" = ertemplate.uplinktype),
@@ -562,7 +562,7 @@
 
 				//Spawn the body
 				var/mob/living/carbon/human/ERTOperative = new ertemplate.mobtype(spawnloc)
-				chosen_candidate.client.prefs.copy_to(ERTOperative)
+				chosen_candidate.client.prefs.apply_prefs_to(ERTOperative)
 				ERTOperative.key = chosen_candidate.key
 
 				if(ertemplate.enforce_human || !(ERTOperative.dna.species.changesource_flags & ERT_SPAWN)) // Don't want any exploding plasmemes
@@ -604,12 +604,12 @@
 			//Open the Armory doors
 			if(ertemplate.opendoors)
 				for(var/obj/machinery/door/poddoor/ert/door in GLOB.airlocks)
-					INVOKE_ASYNC(door, /obj/machinery/door/poddoor.proc/open)
+					INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door/poddoor, open))
 
 			//Open the Mech Bay
 			if(ertemplate.openmech)
 				for(var/obj/machinery/door/poddoor/deathsquad/door in GLOB.airlocks)
-					INVOKE_ASYNC(door, /obj/machinery/door/poddoor.proc/open)
+					INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door/poddoor, open))
 			return TRUE
 
 	return FALSE

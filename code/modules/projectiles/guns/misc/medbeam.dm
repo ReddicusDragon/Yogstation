@@ -53,7 +53,7 @@
 	current_target = target
 	active = TRUE
 	current_beam = new(user,current_target,time=6000,beam_icon_state="medbeam",btype=/obj/effect/ebeam/medical)
-	INVOKE_ASYNC(current_beam, /datum/beam.proc/Start)
+	INVOKE_ASYNC(current_beam, TYPE_PROC_REF(/datum/beam, Start))
 
 	SSblackbox.record_feedback("tally", "gun_fired", 1, type)
 
@@ -166,10 +166,10 @@
 	if(current_target && !ubering)
 
 		if(current_target.health == current_target.maxHealth)
-			ubercharge += 1.25*delta_time/10 // 80 seconds
+			ubercharge += 1.25*delta_time // 80 seconds
 
 		if(current_target.health < current_target.maxHealth)
-			ubercharge += 2.5*delta_time/10 // 40 seconds
+			ubercharge += 2.5*delta_time // 40 seconds
 
 	if(ubering)
 		// No uber flashing
@@ -177,7 +177,7 @@
 			uber_act()
 			ubercharge = 0
 		else
-			ubercharge -= 12.5*delta_time/10
+			ubercharge -= 12.5*delta_time // 8 second uber
 		if(ubercharge <= 0)
 			uber_act()
 
@@ -232,7 +232,7 @@
 
 /datum/action/item_action/activate_uber
 	name = "Activate Übercharge"
-	icon_icon = 'icons/obj/chronos.dmi'
+	button_icon = 'icons/obj/chronos.dmi'
 	button_icon_state = "chronogun"
 
 /// Activates über if ubercharge is ready
@@ -243,7 +243,7 @@
 
 	var/obj/item/gun/medbeam/uber/gun = target
 
-	if(!IsAvailable())
+	if(!IsAvailable(feedback = FALSE))
 		return
 
 	if(gun.ubering)

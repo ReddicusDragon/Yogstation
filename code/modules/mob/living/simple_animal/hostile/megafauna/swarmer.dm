@@ -62,6 +62,7 @@ GLOBAL_LIST_INIT(AISwarmerCapsByType, list(/mob/living/simple_animal/hostile/swa
 	var/call_help_cooldown = 0
 	var/call_help_cooldown_amt = 150 //Deciseconds between calling swarmers to help us when attacked
 	var/static/list/swarmer_caps
+	
 
 /mob/living/simple_animal/hostile/megafauna/swarmer_swarm_beacon/Initialize()
 	. = ..()
@@ -157,7 +158,7 @@ GLOBAL_LIST_INIT(AISwarmerCapsByType, list(/mob/living/simple_animal/hostile/swa
 /mob/living/simple_animal/hostile/swarmer/ai/proc/StartAction(deci = 0)
 	stop_automated_movement = TRUE
 	AIStatus = AI_OFF
-	addtimer(CALLBACK(src, .proc/EndAction), deci)
+	addtimer(CALLBACK(src, PROC_REF(EndAction)), deci)
 
 
 /mob/living/simple_animal/hostile/swarmer/ai/proc/EndAction()

@@ -12,6 +12,8 @@
 	var/datum/admins/holder = null
  	///Needs to implement InterceptClickOn(user,params,atom) proc
 	var/datum/click_intercept = null
+	///Time when the click was intercepted
+	var/click_intercept_time = 0
 	///Used for admin AI interaction
 	var/AI_Interact = FALSE
 
@@ -81,6 +83,8 @@
 	var/mouse_up_icon = null
 	///used to make a special mouse cursor, this one for mouse up icon
 	var/mouse_down_icon = null
+	///used to override the mouse cursor so it doesnt get reset
+	var/mouse_override_icon = null
 
 	///Used for ip intel checking to identify evaders, disabled because of issues with traffic
 	var/ip_intel = "Disabled"
@@ -99,8 +103,6 @@
  	///world.timeofday they connected
 	var/connection_timeofday
 
-	///If the client is currently in player preferences
-	var/inprefs = FALSE
 	///Used for limiting the rate of topic sends by the client to avoid abuse
 	var/list/topiclimiter
 	///Used for limiting the rate of clicks sends by the client to avoid abuse
@@ -114,9 +116,6 @@
 
 	///Should only be a key-value list of north/south/east/west = atom/movable/screen.
 	var/list/char_render_holders
-
-	///LibVG encoding
-	var/encoding = "1252"
 
 	///Messages currently seen by this client
 	var/list/seen_messages
@@ -159,6 +158,8 @@
 
 	/// A buffer of currently held keys.
 	var/list/keys_held = list()
+	/// A buffer for combinations such of modifiers + keys (ex: CtrlD, AltE, ShiftT). Format: ["key"] -> ["combo"] (ex: ["D"] -> ["CtrlD"])
+	var/list/key_combos_held = list()
 	/*
 	** These next two vars are to apply movement for keypresses and releases made while move delayed.
 	** Because discarding that input makes the game less responsive.
@@ -167,3 +168,9 @@
 	var/next_move_dir_add
  	/// On next move, subtract this dir from the move that would otherwise be done
 	var/next_move_dir_sub
+
+	/// Whether or not this client has standard hotkeys enabled
+	var/hotkeys = TRUE
+
+	/// Whether or not this client has the combo HUD enabled
+	var/combo_hud_enabled = FALSE

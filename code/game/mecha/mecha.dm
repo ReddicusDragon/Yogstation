@@ -11,6 +11,8 @@
 #define SIDE_ARMOUR 2
 #define BACK_ARMOUR 3
 
+#define MECHA_MAX_COOLDOWN 30 // Prevents long cooldown equipment from messing up combat
+
 /obj/mecha
 	name = "mecha"
 	desc = "Exosuit"
@@ -22,6 +24,10 @@
 	layer = BELOW_MOB_LAYER//icon draw layer
 	infra_luminosity = 15 //byond implementation is bugged.
 	force = 5
+	light_system = MOVABLE_LIGHT
+	light_range = 3
+	light_power = 6
+	light_on = FALSE
 	flags_1 = HEAR_1
 	var/ruin_mecha = FALSE //if the mecha starts on a ruin, don't automatically give it a tracking beacon to prevent metagaming.
 	var/can_move = 0 //time of next allowed movement
@@ -48,7 +54,6 @@
 	var/list/proc_res = list() //stores proc owners, like proc_res["functionname"] = owner reference
 	var/datum/effect_system/spark_spread/spark_system = new
 	var/lights = FALSE
-	var/lights_power = 6
 	var/last_user_hud = 1 // used to show/hide the mecha hud while preserving previous preference
 	var/completely_disabled = FALSE //stops the mech from doing anything
 	var/omnidirectional_attacks = FALSE //lets mech shoot anywhere, not just in front of it
@@ -80,6 +85,7 @@
 
 	var/stepsound = 'sound/mecha/mechstep.ogg'
 	var/turnsound = 'sound/mecha/mechturn.ogg'
+	var/meleesound = TRUE //does it play a sound when melee attacking (so mime mech can turn it off)
 
 	var/melee_cooldown = 10
 	var/melee_can_hit = TRUE
@@ -93,6 +99,9 @@
 	var/silicon_icon_state = null //if the mech has a different icon when piloted by an AI or MMI
 	var/is_currently_ejecting = FALSE //Mech cannot use equiptment when true, set to true if pilot is trying to exit mech
 
+	var/guns_allowed = FALSE	//Whether or not the mech is allowed to mount guns (mecha_equipment/weapon)
+	var/melee_allowed = FALSE	//Whether or not the mech is allowed to mount melee weapons (mecha_equipment/melee_weapon)
+
 	//Action datums
 	var/datum/action/innate/mecha/mech_eject/eject_action = new
 	var/datum/action/innate/mecha/mech_toggle_internals/internals_action = new
@@ -102,7 +111,7 @@
 	var/datum/action/innate/mecha/mech_toggle_thrusters/thrusters_action = new
 	var/datum/action/innate/mecha/mech_defence_mode/defence_action = new
 	var/datum/action/innate/mecha/mech_overload_mode/overload_action = new
-	var/datum/effect_system/smoke_spread/smoke_system = new //not an action, but trigged by one
+	var/datum/effect_system/fluid_spread/smoke/smoke_system = new //not an action, but trigged by one
 	var/datum/action/innate/mecha/mech_smoke/smoke_action = new
 	var/datum/action/innate/mecha/mech_zoom/zoom_action = new
 	var/datum/action/innate/mecha/mech_switch_damtype/switch_damtype_action = new
@@ -144,7 +153,7 @@
 		add_airtank()
 	spark_system.set_up(2, 0, src)
 	spark_system.attach(src)
-	smoke_system.set_up(3, src)
+	smoke_system.set_up(3, location = src)
 	smoke_system.attach(src)
 	add_cell()
 	add_scanmod()
@@ -155,7 +164,7 @@
 	GLOB.mechas_list += src //global mech list
 	prepare_huds()
 	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.huds)
-		diag_hud.add_to_hud(src)
+		diag_hud.add_atom_to_hud(src)
 	diag_hud_set_mechhealth()
 	diag_hud_set_mechcell()
 	diag_hud_set_mechstat()
@@ -505,7 +514,7 @@
 	if (occupant && !enclosed && !silicon_pilot)
 		if (occupant.fire_stacks < 5)
 			occupant.adjust_fire_stacks(1)
-		occupant.IgniteMob()
+		occupant.ignite_mob()
 
 /obj/mecha/proc/drop_item()//Derpfix, but may be useful in future for engineering exosuits.
 	return
@@ -552,8 +561,13 @@
 	if(!omnidirectional_attacks && dir_to_target && !(dir_to_target & dir))//wrong direction
 		return
 	if(internal_damage & MECHA_INT_CONTROL_LOST)
-		target = safepick(view(3,target))
+		target = pick(view(3,target))
 		if(!target)
+			return
+
+	// No shotgun swapping
+	for(var/obj/item/mecha_parts/mecha_equipment/weapon/W in equipment)
+		if(!W.equip_ready && (W.equip_cooldown < MECHA_MAX_COOLDOWN))
 			return
 
 	var/mob/living/L = user
@@ -562,11 +576,17 @@
 			if(HAS_TRAIT(L, TRAIT_PACIFISM) && selected.harmful)
 				to_chat(user, span_warning("You don't want to harm other living beings!"))
 				return
+			if(HAS_TRAIT(L, TRAIT_NO_STUN_WEAPONS) && !selected.harmful)
+				to_chat(user, span_warning("You cannot use non-lethal weapons!"))
+				return
 			if(selected.action(target,params))
 				selected.start_cooldown()
 	else if(selected && selected.is_melee())
 		if(isliving(target) && selected.harmful && HAS_TRAIT(L, TRAIT_PACIFISM))
 			to_chat(user, span_warning("You don't want to harm other living beings!"))
+			return
+		if(isliving(target) && !selected.harmful && HAS_TRAIT(L, TRAIT_NO_STUN_WEAPONS))
+			to_chat(user, span_warning("You cannot use non-lethal weapons!"))
 			return
 		if(istype(selected, /obj/item/mecha_parts/mecha_equipment/melee_weapon))		//Need to make a special check for melee weapons with cleave attacks
 			var/obj/item/mecha_parts/mecha_equipment/melee_weapon/W = selected
@@ -577,7 +597,7 @@
 			selected.start_cooldown()
 	else
 		if(internal_damage & MECHA_INT_CONTROL_LOST)
-			target = safepick(oview(1,src))
+			target = pick(oview(1,src))
 		if(!melee_can_hit || !istype(target, /atom))
 			return
 		if(equipment_disabled)
@@ -756,19 +776,19 @@
 ///////////////////////////////////
 
 /obj/mecha/proc/check_for_internal_damage(list/possible_int_damage,ignore_threshold=null)
-	if(!islist(possible_int_damage) || isemptylist(possible_int_damage))
+	if(!islist(possible_int_damage) || !length(possible_int_damage))
 		return
 	if(prob(20))
 		if(ignore_threshold || obj_integrity*100/max_integrity < internal_damage_threshold)
 			for(var/T in possible_int_damage)
 				if(internal_damage & T)
 					possible_int_damage -= T
-			var/int_dam_flag = safepick(possible_int_damage)
+			var/int_dam_flag = pick(possible_int_damage)
 			if(int_dam_flag)
 				setInternalDamage(int_dam_flag)
 	if(prob(5))
 		if(ignore_threshold || obj_integrity*100/max_integrity < internal_damage_threshold)
-			var/obj/item/mecha_parts/mecha_equipment/ME = safepick(equipment)
+			var/obj/item/mecha_parts/mecha_equipment/ME = pick(equipment)
 			if(ME)
 				qdel(ME)
 	return
@@ -1299,9 +1319,36 @@ GLOBAL_VAR_INIT(year_integer, text2num(year)) // = 2013???
 		if(skill)
 			evaNum *= skill.piloting_speed
 
-		var/obj/item/clothing/under/clothes = H.get_item_by_slot(SLOT_W_UNIFORM) //if the suit directly assists the pilot
+		var/obj/item/clothing/under/clothes = H.get_item_by_slot(SLOT_W_UNIFORM) //if the jumpsuit directly assists the pilot
 		if(clothes)
 			var/datum/component/mech_pilot/MP = clothes.GetComponent(/datum/component/mech_pilot)
 			if(MP)
 				evaNum *= MP.piloting_speed
 	return evaNum
+
+/obj/mecha/proc/face_atom(atom/A)			//Pretty much identical to the mob proc that does the same thing
+	if( !A || !x || !y || !A.x || !A.y )	//Do we have a target with a location and do we have a location?
+		return								//Note: we don't check for states and stuff because this is just for forcing facing. That can come later.
+	var/dx = A.x - x	//Gets the difference in x and y coordinates
+	var/dy = A.y - y
+	if(!dx && !dy) 		// Wall items are graphically shifted but on the floor
+		if(A.pixel_y > 16)
+			setDir(NORTH)
+		else if(A.pixel_y < -16)
+			setDir(SOUTH)
+		else if(A.pixel_x > 16)
+			setDir(EAST)
+		else if(A.pixel_x < -16)
+			setDir(WEST)
+		return
+
+	if(abs(dx) < abs(dy))
+		if(dy > 0)
+			setDir(NORTH)
+		else
+			setDir(SOUTH)
+	else
+		if(dx > 0)
+			setDir(EAST)
+		else
+			setDir(WEST)

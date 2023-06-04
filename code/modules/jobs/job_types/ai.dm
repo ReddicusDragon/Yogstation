@@ -18,6 +18,10 @@
 	display_order = JOB_DISPLAY_ORDER_AI
 	var/do_special_check = TRUE
 
+	departments_list = list(
+		/datum/job_department/silicon,
+	)
+
 	alt_titles = list("Station Central Processor", "Central Silicon Intelligence", "Cyborg Overlord")
 
 	//this should never be seen because of the way olfaction works but just in case
@@ -41,7 +45,7 @@
 	GLOB.ai_os.set_cpu(AI, total_available_cpu)
 	GLOB.ai_os.add_ram(AI, total_available_ram)
 
-	AI.apply_pref_name("ai", M.client)			//If this runtimes oh well jobcode is fucked.
+	AI.apply_pref_name(/datum/preference/name/ai, M.client)			//If this runtimes oh well jobcode is fucked.
 	AI.set_core_display_icon(null, M.client)
 
 	//we may have been created after our borg
@@ -73,7 +77,7 @@
 
 /datum/job/ai/announce(mob/living/silicon/ai/AI)
 	. = ..()
-	SSticker.OnRoundstart(CALLBACK(GLOBAL_PROC, .proc/minor_announce, "[AI] has been downloaded to the central AI network.")) //YOGS - removed the co-ordinates
+	SSticker.OnRoundstart(CALLBACK(GLOBAL_PROC, PROC_REF(minor_announce), "[AI] has been downloaded to the central AI network.")) //YOGS - removed the co-ordinates
 
 /datum/job/ai/config_check()
 	return CONFIG_GET(flag/allow_ai)

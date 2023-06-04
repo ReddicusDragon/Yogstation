@@ -433,6 +433,16 @@
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
 
+/datum/design/holosignclown
+	name = "HONK holobanana projector"
+	desc = "A holographic projector that creates hardlight bananas"
+	id = "holosignclown"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 2000, /datum/material/glass = 1000, /datum/material/plastic = 500, /datum/material/bananium = 1000)
+	build_path = /obj/item/holosign_creator/clown
+	category = list("Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
+
 /datum/design/holosignsec
 	name = "Security Holobarrier Projector"
 	desc = "A holographic projector that creates holographic security barriers."
@@ -496,6 +506,16 @@
 	build_path = /obj/item/reactive_armor_shell
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING
+
+/datum/design/anomaly_quiver
+	name = "Anomaly Quiver"
+	desc = "An empty, experimental quiver with not much space inside. A bluespace, pyroclastic, or gravitational anomaly can be inserted for varying effects."
+	id = "anomaly_quiver"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 7500, /datum/material/diamond = 3750, /datum/material/uranium = 6000, /datum/material/silver = 3500, /datum/material/gold = 3750)
+	build_path = /obj/item/storage/belt/quiver/anomaly
+	category = list("Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/platingmki
 	name = "MK.I bluespace plating"

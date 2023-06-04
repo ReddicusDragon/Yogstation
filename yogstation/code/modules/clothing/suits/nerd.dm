@@ -15,12 +15,12 @@
 	allowed = list(/obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/gun/energy/kinetic_accelerator, /obj/item/tank/internals/ipc_coolant, /obj/item/crowbar)
 
 	var/list/funny_signals = list(
-		COMSIG_MOB_SAY = .proc/handle_speech,
-		COMSIG_MOB_DEATH = .proc/handle_death,
-		COMSIG_LIVING_IGNITED = .proc/handle_ignite,
-		COMSIG_LIVING_ELECTROCUTE_ACT = .proc/handle_shock,
-		COMSIG_CARBON_GAIN_WOUND = .proc/handle_wound_add,
-		COMSIG_MOB_APPLY_DAMAGE = .proc/handle_damage
+		COMSIG_MOB_SAY = PROC_REF(handle_speech),
+		COMSIG_MOB_DEATH = PROC_REF(handle_death),
+		COMSIG_LIVING_IGNITED = PROC_REF(handle_ignite),
+		COMSIG_LIVING_ELECTROCUTE_ACT = PROC_REF(handle_shock),
+		COMSIG_CARBON_GAIN_WOUND = PROC_REF(handle_wound_add),
+		COMSIG_MOB_APPLY_DAMAGE = PROC_REF(handle_damage)
 	)
 
 	var/static/list/wound_to_sound = list(
@@ -47,7 +47,6 @@
 
 	COOLDOWN_DECLARE(next_damage_notify)
 	COOLDOWN_DECLARE(next_morphine)
-	COOLDOWN_DECLARE(next_sound)
 
 /obj/item/clothing/suit/armor/nerd/Initialize()
 	. = ..()
@@ -61,12 +60,6 @@
 
 /obj/item/clothing/suit/armor/nerd/proc/process_sound_queue()
 
-	if(!COOLDOWN_FINISHED(src,next_sound))
-		return FALSE
-
-	if(!length(sound_queue))
-		return FALSE
-
 	var/list/sound_data = sound_queue[1]
 	var/sound_file = sound_data[1]
 	var/sound_delay = sound_data[2]
@@ -75,9 +68,10 @@
 
 	sound_queue.Cut(1,2)
 
-	addtimer(CALLBACK(src, .proc/process_sound_queue), sound_delay)
+	if(!length(sound_queue))
+		return
 
-	COOLDOWN_START(src,next_sound,sound_delay)
+	addtimer(CALLBACK(src, PROC_REF(process_sound_queue)), sound_delay)
 
 /obj/item/clothing/suit/armor/nerd/emag_act(mob/user)
 
@@ -93,15 +87,15 @@
 
 /obj/item/clothing/suit/armor/nerd/proc/add_queue(var/desired_file,var/desired_delay,var/purge_queue=FALSE)
 
-	var/empty_sound_queue = !length(sound_queue)
+	var/was_empty_sound_queue = !length(sound_queue)
 
 	if(purge_queue)
 		sound_queue.Cut()
 
 	sound_queue += list(list(desired_file,desired_delay)) //BYOND is fucking weird so you have to do this bullshit if you want to add a list to a list.
 
-	if(empty_sound_queue)
-		addtimer(CALLBACK(src, .proc/process_sound_queue), 1 SECONDS)
+	if(was_empty_sound_queue)
+		addtimer(CALLBACK(src, PROC_REF(process_sound_queue)), 1 SECONDS)
 
 	return TRUE
 

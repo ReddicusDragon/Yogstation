@@ -278,6 +278,8 @@ GLOBAL_VAR_INIT(cryopods_enabled, FALSE)
 				to_chat(M.current, "<BR>[span_userdanger("Your target is no longer within reach. Objective removed!")]")
 				M.announce_objectives()
 		else if(O.target == mob_occupant.mind)
+			if((O.type in subtypesof(/datum/objective/assassinate)) && O.check_completion()) //kill once/kill+clone objective that's already been completed, don't give a new objective
+				continue
 			O.target = null
 			O.find_target()
 			O.update_explanation_text()
@@ -333,7 +335,7 @@ GLOBAL_VAR_INIT(cryopods_enabled, FALSE)
 		announcer.announce("CRYOSTORAGE", mob_occupant.real_name, announce_rank, list())
 		visible_message(span_notice("\The [src] hums and hisses as it moves [mob_occupant.real_name] into storage."))
 
-	for(var/obj/item/W in mob_occupant.GetAllContents())
+	for(var/obj/item/W in mob_occupant.get_all_contents())
 		if(QDELETED(W))
 			continue
 		if(W.loc.loc && (( W.loc.loc == loc ) || (W.loc.loc == control_computer)))

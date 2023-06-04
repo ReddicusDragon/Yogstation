@@ -20,10 +20,17 @@
 	display_order = JOB_DISPLAY_ORDER_QUARTERMASTER
 	minimal_character_age = 20 //Probably just needs some baseline experience with bureaucracy, enough trust to land the position
 
-	changed_maps = list("OmegaStation")
+	departments_list = list(
+		/datum/job_department/cargo,
+	)
 
 	mail_goodies = list(
-		/obj/item/circuitboard/machine/emitter = 3
+		/obj/item/stack/sheet/mineral/gold = 10,
+		/obj/item/clothing/mask/facehugger/toy = 5,
+		/obj/item/circuitboard/machine/emitter = 3,
+		/obj/item/survivalcapsule/luxuryelite = 2,
+		/obj/item/construction/rcd = 2,
+		/obj/item/circuitboard/machine/vending/donksofttoyvendor = 1
 	)
 
 	smells_like = "capitalism"
@@ -31,9 +38,6 @@
 	exp_requirements = 120
 	exp_type = EXP_TYPE_CREW
 	exp_type_department = EXP_TYPE_SUPPLY
-
-/datum/job/qm/proc/OmegaStationChanges()
-	return TRUE
 
 /datum/outfit/job/quartermaster
 	name = "Quartermaster"

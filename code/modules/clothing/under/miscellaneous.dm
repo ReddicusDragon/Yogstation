@@ -160,7 +160,7 @@
 	item_state = "bl_suit"
 	w_class = WEIGHT_CLASS_BULKY
 	gas_transfer_coefficient = 0.01
-	permeability_coefficient = 0.02
+	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 90, RAD = 0, FIRE = 0, ACID = 0, WOUND = 5)
 	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	cold_protection = CHEST | GROIN | LEGS | ARMS //Needs gloves and shoes with cold protection to be fully protected.
 	min_cold_protection_temperature = SPACE_SUIT_MIN_TEMP_PROTECT
@@ -176,7 +176,6 @@
 	item_state = "bl_suit"
 	desc = "A cybernetically enhanced jumpsuit used for administrative duties."
 	gas_transfer_coefficient = 0.01
-	permeability_coefficient = 0.01
 	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	armor = list(MELEE = 100, BULLET = 100, LASER = 100,ENERGY = 100, BOMB = 100, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
 	cold_protection = CHEST | GROIN | LEGS | FEET | ARMS | HANDS
@@ -679,7 +678,7 @@
 			next_extinguish = world.time + extinguish_cooldown
 			extinguishes_left--
 			H.visible_message(span_warning("[H]'s suit automatically extinguishes [H.p_them()]!"),span_warning("Your suit automatically extinguishes you."))
-			H.ExtinguishMob()
+			H.extinguish_mob()
 			new /obj/effect/particle_effect/water(get_turf(H))
 	return 0
 
@@ -816,7 +815,9 @@
 	item_state = "lampskirt_male"
 	body_parts_covered = CHEST|GROIN|LEGS|FEET
 	can_adjust = FALSE
-	var/brightness_on = 1 //luminosity when the light is on
+	light_system = MOVABLE_LIGHT
+	light_range = 2
+	light_on = FALSE
 	var/on = FALSE
 	actions_types = list(/datum/action/item_action/toggle_helmet_light)
 
@@ -827,14 +828,14 @@
 	user.update_inv_w_uniform() //So the mob overlay updates
 
 	if(on)
-		set_light(brightness_on)
+		set_light_on(TRUE)
 		user.visible_message(span_notice("[user] discreetly pulls a cord for the bulbs under [user.p_their()] skirt, turning [user.p_them()] on."))
 	else
-		set_light(0)
+		set_light_on(FALSE)
 
 	for(var/X in actions)
 		var/datum/action/A=X
-		A.UpdateButtonIcon()
+		A.build_all_button_icons()
 
 /obj/item/clothing/under/lampskirt/female
 	icon_state = "lampskirt_female"

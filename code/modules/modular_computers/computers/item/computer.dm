@@ -22,6 +22,8 @@
 	var/last_battery_percent = 0
 	var/last_world_time = "00:00"
 	var/list/last_header_icons
+	///A pAI currently loaded into the modular computer.
+	var/obj/item/paicard/inserted_pai
 
 	/// Power usage when the computer is open (screen is active) and can be interacted with. Remember hardware can use power too.
 	var/base_active_power_usage = 50
@@ -55,6 +57,12 @@
 	max_integrity = 100
 	armor = list(MELEE = 0, BULLET = 20, LASER = 20, ENERGY = 100, BOMB = 0, BIO = 100, RAD = 100, FIRE = 0, ACID = 0)
 
+	light_system = MOVABLE_LIGHT
+	light_range = 3
+	light_power = 0.6
+	light_color = "#FFFFFF"
+	light_on = FALSE
+
 	/// List of "connection ports" in this computer and the components with which they are plugged
 	var/list/all_components = list()
 	/// Lazy List of extra hardware slots that can be used modularly.
@@ -67,12 +75,10 @@
 	var/obj/physical = null
 	///If the computer has a flashlight/LED light/what-have-you installed
 	var/has_light = FALSE
-	///If that light is enabled
-	var/light_on = FALSE
 	///The brightness of that light
 	var/comp_light_luminosity = 3
 	///The color of that light
-	var/comp_light_color
+	var/comp_light_color = "#FFFFFF"
 
 	// Preset Stuff
 	var/list/starting_components = list()
@@ -88,7 +94,8 @@
 	START_PROCESSING(SSobj, src)
 	if(!physical)
 		physical = src
-	comp_light_color = "#FFFFFF"
+	set_light_color(comp_light_color)
+	set_light_range(comp_light_luminosity)
 	idle_threads = list()
 	install_starting_components()
 	install_starting_files()
@@ -97,13 +104,10 @@
 /obj/item/modular_computer/Destroy()
 	kill_program(forced = TRUE)
 	STOP_PROCESSING(SSobj, src)
-	for(var/H in all_components)
-		var/obj/item/computer_hardware/CH = all_components[H]
-		if(CH.holder == src)
-			CH.on_remove(src)
-			CH.holder = null
-			all_components.Remove(CH.device_type)
-			qdel(CH)
+	for(var/port in all_components)
+		var/obj/item/computer_hardware/component = all_components[port]
+		qdel(component)
+	all_components.Cut() //Die demon die
 	physical = null
 	return ..()
 
@@ -111,7 +115,7 @@
 	if(active_program?.tap(A, user, params))
 		user.do_attack_animation(A) //Emulate this animation since we kill the attack in three lines
 		playsound(loc, 'sound/weapons/tap.ogg', get_clamped_volume(), TRUE, -1) //Likewise for the tap sound
-		addtimer(CALLBACK(src, .proc/play_ping), 0.5 SECONDS, TIMER_UNIQUE) //Slightly delayed ping to indicate success
+		addtimer(CALLBACK(src, PROC_REF(play_ping)), 0.5 SECONDS, TIMER_UNIQUE) //Slightly delayed ping to indicate success
 		return
 	return ..()
 
@@ -344,7 +348,7 @@
 			to_chat(user, span_warning("You press the power button but \the [src] does not respond."))
 
 // Process currently calls handle_power(), may be expanded in future if more things are added.
-/obj/item/modular_computer/process()
+/obj/item/modular_computer/process(delta_time)
 	if(!enabled) // The computer is turned off
 		last_power_usage = 0
 		return FALSE
@@ -363,7 +367,7 @@
 
 	if(active_program)
 		if(active_program.program_state != PROGRAM_STATE_KILLED)
-			active_program.process_tick()
+			active_program.process_tick(delta_time)
 			active_program.ntnet_status = get_ntnet_status()
 		else
 			active_program = null
@@ -371,12 +375,12 @@
 	for(var/I in idle_threads)
 		var/datum/computer_file/program/P = I
 		if(P.program_state != PROGRAM_STATE_KILLED)
-			P.process_tick()
+			P.process_tick(delta_time)
 			P.ntnet_status = get_ntnet_status()
 		else
 			idle_threads.Remove(P)
 
-	handle_power() // Handles all computer power interaction
+	handle_power(delta_time) // Handles all computer power interaction
 	//check_update_ui_need()
 
 /**
@@ -502,6 +506,34 @@
 	enabled = FALSE
 	update_icon()
 	play_computer_sound(shutdown_sound, get_clamped_volume(), FALSE)
+
+/**
+  * Toggles the computer's flashlight, if it has one.
+  *
+  * Called from ui_act(), does as the name implies.
+  * It is seperated from ui_act() to be overwritten as needed.
+*/
+/obj/item/modular_computer/proc/toggle_flashlight()
+	if(!has_light)
+		return FALSE
+	set_light_on(!light_on)
+	update_icon()
+	return TRUE
+
+/**
+  * Sets the computer's light color, if it has a light.
+  *
+  * Called from ui_act(), this proc takes a color string and applies it.
+  * It is seperated from ui_act() to be overwritten as needed.
+  * Arguments:
+  ** color is the string that holds the color value that we should use. Proc auto-fails if this is null.
+*/
+/obj/item/modular_computer/proc/set_flashlight_color(color)
+	if(!has_light || !color)
+		return FALSE
+	comp_light_color = color
+	set_light_color(color)
+	return TRUE
 
 /obj/item/modular_computer/screwdriver_act(mob/user, obj/item/tool)
 	if(!all_components.len)

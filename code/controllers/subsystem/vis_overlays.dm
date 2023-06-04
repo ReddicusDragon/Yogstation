@@ -51,7 +51,7 @@ SUBSYSTEM_DEF(vis_overlays)
 
 	if(!thing.managed_vis_overlays)
 		thing.managed_vis_overlays = list(overlay)
-		RegisterSignal(thing, COMSIG_ATOM_DIR_CHANGE, .proc/rotate_vis_overlay)
+		RegisterSignal(thing, COMSIG_ATOM_DIR_CHANGE, PROC_REF(rotate_vis_overlay))
 	else
 		thing.managed_vis_overlays += overlay
 
@@ -83,6 +83,8 @@ SUBSYSTEM_DEF(vis_overlays)
 	var/list/overlays_to_remove = list()
 	for(var/i in thing.managed_vis_overlays - unique_vis_overlays)
 		var/obj/effect/overlay/vis/overlay = i
+		if(!overlay)
+			continue
 		add_vis_overlay(thing, overlay.icon, overlay.icon_state, overlay.layer, overlay.plane, turn(overlay.dir, rotation), overlay.alpha, overlay.appearance_flags)
 		overlays_to_remove += overlay
 	for(var/i in thing.managed_vis_overlays & unique_vis_overlays)

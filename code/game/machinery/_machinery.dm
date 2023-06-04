@@ -21,9 +21,9 @@ Class Variables:
    power_channel (num)
       What channel to draw from when drawing power for power mode
       Possible Values:
-         EQUIP:0 -- Equipment Channel
-         LIGHT:2 -- Lighting Channel
-         ENVIRON:3 -- Environment Channel
+         AREA_USAGE_EQUIP:0 -- Equipment Channel
+         AREA_USAGE_LIGHT:2 -- Lighting Channel
+         AREA_USAGE_ENVIRON:3 -- Environment Channel
 
    component_parts (list)
       A list of component parts of machine used by frame based machines.
@@ -53,11 +53,11 @@ Class Procs:
       Default definition uses 'use_power', 'power_channel', 'active_power_usage',
       'idle_power_usage', 'powered()', and 'use_power()' implement behavior.
 
-   powered(chan = EQUIP)         'modules/power/power.dm'
+   powered(chan = AREA_USAGE_EQUIP)         'modules/power/power.dm'
       Checks to see if area that contains the object has power available for power
       channel given in 'chan'.
 
-   use_power(amount, chan=EQUIP)   'modules/power/power.dm'
+   use_power(amount, chan=AREA_USAGE_EQUIP)   'modules/power/power.dm'
       Deducts 'amount' from the power channel 'chan' of the area that contains the object.
 
    power_change()               'modules/power/power.dm'
@@ -103,8 +103,8 @@ Class Procs:
 		//2 = run auto, use active
 	var/idle_power_usage = 0
 	var/active_power_usage = 0
-	var/power_channel = EQUIP
-		//EQUIP,ENVIRON or LIGHT
+	var/power_channel = AREA_USAGE_EQUIP
+		//AREA_USAGE_EQUIP, AREA_USAGE_ENVIRON or AREA_USAGE_LIGHT
 	var/wire_compatible = FALSE
 
 	var/list/component_parts = null //list of all the parts used to build it, if made from certain kinds of frames.
@@ -154,7 +154,7 @@ Class Procs:
 /obj/machinery/LateInitialize()
 	. = ..()
 	power_change()
-	RegisterSignal(src, COMSIG_ENTER_AREA, .proc/power_change)
+	RegisterSignal(src, COMSIG_ENTER_AREA, PROC_REF(power_change))
 
 /obj/machinery/Destroy()
 	GLOB.machines.Remove(src)
@@ -377,6 +377,8 @@ Class Procs:
 /obj/machinery/_try_interact(mob/user)
 	if((interaction_flags_machine & INTERACT_MACHINE_WIRES_IF_OPEN) && panel_open && (attempt_wire_interaction(user) == WIRE_INTERACTION_BLOCK))
 		return TRUE
+	if((user.mind?.has_martialart(MARTIALART_BUSTERSTYLE)) && (user.a_intent == INTENT_GRAB)) //buster arm shit since it can throw vendors
+		return	
 	return ..()
 
 /obj/machinery/CheckParts(list/parts_list)
@@ -475,7 +477,7 @@ Class Procs:
 		I.play_tool_sound(src, 50)
 		var/prev_anchored = anchored
 		//as long as we're the same anchored state and we're either on a floor or are anchored, toggle our anchored state
-		if(I.use_tool(src, user, time, extra_checks = CALLBACK(src, .proc/unfasten_wrench_check, prev_anchored, user)))
+		if(I.use_tool(src, user, time, extra_checks = CALLBACK(src, PROC_REF(unfasten_wrench_check), prev_anchored, user)))
 			to_chat(user, span_notice("You [anchored ? "un" : ""]secure [src]."))
 			setAnchored(!anchored)
 			playsound(src, 'sound/items/deconstruct.ogg', 50, 1)
@@ -510,7 +512,7 @@ Class Procs:
 				for(var/obj/item/B in W.contents)
 					if(istype(B, P) && istype(A, P))
 						//won't replace beakers if they have reagents in them to prevent funny explosions
-						if(istype(B,/obj/item/reagent_containers) && !isemptylist(B.reagents?.reagent_list)) 
+						if(istype(B,/obj/item/reagent_containers) && length(B.reagents?.reagent_list)) 
 							continue
 						// If it's a corrupt or rigged cell, attempting to send it through Bluespace could have unforeseen consequences.
 						if(istype(B, /obj/item/stock_parts/cell) && W.works_from_distance)

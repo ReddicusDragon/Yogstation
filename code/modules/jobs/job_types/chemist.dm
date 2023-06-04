@@ -27,23 +27,19 @@
 	display_order = JOB_DISPLAY_ORDER_CHEMIST
 	minimal_character_age = 24 //A lot of experimental drugs plus understanding the facilitation and purpose of several subtances; what treats what and how to safely manufacture it
 
-	changed_maps = list("OmegaStation", "EclipseStation")
+	departments_list = list(
+		/datum/job_department/medical,
+	)
 
 	mail_goodies = list(
 		/obj/item/reagent_containers/glass/bottle/flash_powder = 15,
-		///obj/item/reagent_containers/glass/bottle/exotic_stabilizer = 5,
-		///obj/item/reagent_containers/glass/bottle/leadacetate = 5,
+		/obj/item/reagent_containers/glass/beaker/meta = 15,
+		/obj/item/reagent_containers/glass/beaker/large/lemoline = 10,
+		/obj/item/storage/pill_bottle/gummies/floorbear = 1,
 		/obj/item/paper/secretrecipe = 1
 	)
 
 	smells_like = "chemicals"
-
-/datum/job/chemist/proc/OmegaStationChanges()
-	return TRUE
-
-/datum/job/chemist/proc/EclipseStationChanges()
-	total_positions = 3
-	spawn_positions = 3
 
 /datum/outfit/job/chemist
 	name = "Chemist"

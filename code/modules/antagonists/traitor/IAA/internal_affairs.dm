@@ -13,6 +13,7 @@
 	var/last_man_standing = FALSE
 	var/list/datum/mind/targets_stolen
 	greentext_achieve = /datum/achievement/greentext/internal
+	preview_outfit = /datum/outfit/assassin
 
 /datum/antagonist/traitor/internal_affairs/proc/give_pinpointer()
 	if(owner && owner.current)
@@ -69,7 +70,7 @@
 		return
 	var/turf/here = get_turf(owner)
 	var/turf/there = get_turf(scan_target)
-	if(here.z != there.z)
+	if(here?.z != there?.z)
 		linked_alert.icon_state = "pinonnull"
 		return
 	if(get_dist_euclidian(here,there)<=minimum_range + rand(0, range_fuzz_factor))
@@ -241,6 +242,7 @@
 		//Lower chance of someone needing to do an additional objective, but getting hijack instead of DaGD
 		if(prob(PROB_ACTUAL_TRAITOR)) //20%
 			company = /datum/corporation/gorlex //Should not double wammy the corporate introduction, I hope
+			name = "Gorlex Marauders Exile"
 			owner.special_role = TRAITOR_AGENT_ROLE
 			special_role = TRAITOR_AGENT_SROLE
 			marauder = TRUE

@@ -51,7 +51,6 @@
 		if(!tool)
 			tool = S
 // yogs end
-
 	if(accept_any_item)
 		if(tool && tool_check(user, tool))
 			success = TRUE
@@ -70,7 +69,7 @@
 				if(tool_check(user, tool))
 					success = TRUE
 					break
-
+					
 	if(success)
 		if(target_zone == surgery.location)
 			if(get_location_accessible(target, target_zone) || surgery.ignore_clothes)
@@ -103,6 +102,9 @@
 
 	if(tool)
 		speed_mod = tool.toolspeed
+
+	if(is_species(user, /datum/species/lizard/ashwalker/shaman))//shaman is slightly better at surgeries
+		speed_mod *= 0.9
 
 	if(IS_MEDICAL(user))
 		speed_mod *= 0.8
@@ -267,7 +269,7 @@
 			ouchie_mod *= ouchie_modifying_chems[R]
 	if(target.stat == UNCONSCIOUS)
 		ouchie_mod *= 0.8
-	ouchie_mod *= clamp(1 - target.drunkenness / 100, 0, 1)
+	ouchie_mod *= clamp(1 - target.get_drunk_amount() / 100, 0, 1)
 	if(!success)
 		ouchie_mod *= 2
 	var/final_ouchie_chance = SURGERY_FUCKUP_CHANCE * ouchie_mod

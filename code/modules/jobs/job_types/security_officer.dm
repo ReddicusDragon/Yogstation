@@ -29,31 +29,20 @@
 	display_order = JOB_DISPLAY_ORDER_SECURITY_OFFICER
 	minimal_character_age = 18 //Just a few months of boot camp, not a whole year
 
-	changed_maps = list("EclipseStation", "YogsPubby", "OmegaStation")
+	departments_list = list(
+		/datum/job_department/security,
+	)
 
 	mail_goodies = list(
 		/obj/item/reagent_containers/food/snacks/donut/jelly = 10,
 		/obj/item/reagent_containers/food/snacks/donut/meat = 10,
-		/obj/item/reagent_containers/food/snacks/donut/spaghetti = 5
-		///obj/item/clothing/mask/whistle = 5,
-		///obj/item/melee/baton/security/boomerang/loaded = 1
+		/obj/item/reagent_containers/food/snacks/donut/spaghetti = 5,
+		/obj/item/grenade/chem_grenade/teargas = 4,
+		/obj/item/grenade/flashbang = 2,
+		/obj/item/clothing/mask/gas/sechailer/swat = 1
 	)
 
 	smells_like = "donuts"
-
-/datum/job/officer/proc/EclipseStationChanges()
-	total_positions = 14
-	spawn_positions = 10
-
-/datum/job/officer/proc/YogsPubbyChanges()
-	base_access |= ACCESS_CREMATORIUM
-
-/datum/job/officer/proc/OmegaStationChanges()
-	total_positions = 3
-	spawn_positions = 3
-	added_access = list()
-	base_access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_ARMORY, ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_WEAPONS, ACCESS_FORENSICS_LOCKERS)
-	supervisors = "the captain"
 
 /datum/job/officer/get_access()
 	var/list/L = list()
@@ -67,7 +56,7 @@ GLOBAL_LIST_INIT(available_depts_sec, list(SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICA
 	// Assign department security
 	var/department
 	if(M && M.client && M.client.prefs)
-		department = M.client.prefs.prefered_security_department
+		department = M.client?.prefs?.read_preference(/datum/preference/choiced/security_department)
 		if(!LAZYLEN(GLOB.available_depts_sec) || department == "None")
 			return
 		else if(department in GLOB.available_depts_sec)
@@ -100,7 +89,7 @@ GLOBAL_LIST_INIT(available_depts_sec, list(SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICA
 			accessory =  /obj/item/clothing/accessory/armband/medblue
 		if(SEC_DEPT_SCIENCE)
 			ears = /obj/item/radio/headset/headset_sec/alt/department/sci
-			dep_access = list(ACCESS_RESEARCH, ACCESS_TOX)
+			dep_access = list(ACCESS_RESEARCH, ACCESS_TOX, ACCESS_ROBOTICS, ACCESS_XENOBIOLOGY)
 			destination = /area/security/checkpoint/science
 			spawn_point = locate(/obj/effect/landmark/start/depsec/science) in GLOB.department_security_spawns
 			accessory = /obj/item/clothing/accessory/armband/science
@@ -134,7 +123,7 @@ GLOBAL_LIST_INIT(available_depts_sec, list(SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICA
 		else
 			var/safety = 0
 			while(safety < 25)
-				T = safepick(get_area_turfs(destination))
+				T = pick(get_area_turfs(destination))
 				if(T && !H.Move(T))
 					safety += 1
 					continue

@@ -9,7 +9,7 @@
 
 /obj/item/pda/clown/ComponentInitialize()
 	. = ..()
-	AddComponent(/datum/component/slippery, 120, NO_SLIP_WHEN_WALKING, CALLBACK(src, .proc/AfterSlip))
+	AddComponent(/datum/component/slippery, 120, NO_SLIP_WHEN_WALKING, CALLBACK(src, PROC_REF(AfterSlip)))
 
 /obj/item/pda/clown/proc/AfterSlip(mob/living/carbon/human/M)
 	if (istype(M) && (M.real_name != owner))
@@ -21,7 +21,6 @@
 /obj/item/pda/ai
 	icon = null
 	ttone = "data"
-	fon = FALSE
 
 /obj/item/pda/ai/attack_self(mob/user)
 	if ((honkamt > 0) && (prob(60)))//For clown virus.
@@ -34,7 +33,7 @@
 
 /obj/item/pda/ai/Initialize()
 	. = ..()
-	RegisterSignal(src, COMSIG_TABLET_CHECK_DETONATE, .proc/pda_no_detonate)
+	RegisterSignal(src, COMSIG_TABLET_CHECK_DETONATE, PROC_REF(pda_no_detonate))
 
 /obj/item/pda/medical
 	name = "medical PDA"
@@ -124,7 +123,7 @@
 
 /obj/item/pda/captain/Initialize()
 	. = ..()
-	RegisterSignal(src, COMSIG_TABLET_CHECK_DETONATE, .proc/pda_no_detonate)
+	RegisterSignal(src, COMSIG_TABLET_CHECK_DETONATE, PROC_REF(pda_no_detonate))
 
 /obj/item/pda/cargo
 	name = "cargo technician PDA"
