@@ -8,6 +8,19 @@
 #define Z_TURFS(ZLEVEL) block(locate(1,1,ZLEVEL), locate(world.maxx, world.maxy, ZLEVEL))
 #define CULT_POLL_WAIT 2400
 
+/// Returns a list of turfs similar to CORNER_BLOCK but with offsets
+#define CORNER_BLOCK_OFFSET(corner, width, height, offset_x, offset_y) ( \
+	(block(locate(corner.x + offset_x, corner.y + offset_y, corner.z), \
+			locate(min(corner.x + (width - 1) + offset_x, world.maxx), \
+			min(corner.y + (height - 1) + offset_y, world.maxy), corner.z))))
+
+/// Returns an outline (neighboring turfs) of the given block
+#define CORNER_OUTLINE(corner, width, height) ( \
+	CORNER_BLOCK_OFFSET(corner, width + 2, 1, -1, -1) + \
+	CORNER_BLOCK_OFFSET(corner, width + 2, 1, -1, height) + \
+	CORNER_BLOCK_OFFSET(corner, 1, height, -1, 0) + \
+	CORNER_BLOCK_OFFSET(corner, 1, height, width, 0))
+
 /proc/get_area_name(atom/X, format_text = FALSE, is_sensor = FALSE)
 	var/area/A = isarea(X) ? X : get_area(X)
 	if(!A)
@@ -144,20 +157,21 @@
 
 	return dist
 
-/proc/circlerangeturfs(center=usr,radius=3)
+///Returns a list of turfs around a center based on RANGE_TURFS()
+/proc/circle_range_turfs(center = usr, radius = 3)
 
-	var/turf/centerturf = get_turf(center)
+	var/turf/center_turf = get_turf(center)
 	var/list/turfs = new/list()
-	var/rsq = radius * (radius+0.5)
+	var/rsq = radius * (radius + 0.5)
 
-	for(var/turf/T in range(radius, centerturf))
-		var/dx = T.x - centerturf.x
-		var/dy = T.y - centerturf.y
-		if(dx*dx + dy*dy <= rsq)
-			turfs += T
+	for(var/turf/checked_turf as anything in RANGE_TURFS(radius, center_turf))
+		var/dx = checked_turf.x - center_turf.x
+		var/dy = checked_turf.y - center_turf.y
+		if(dx * dx + dy * dy <= rsq)
+			turfs += checked_turf
 	return turfs
 
-/proc/circleviewturfs(center=usr,radius=3)		//Is there even a diffrence between this proc and circlerangeturfs()?
+/proc/circleviewturfs(center=usr,radius=3) //Is there even a diffrence between this proc and circle_range_turfs()? // Yes
 
 	var/turf/centerturf = get_turf(center)
 	var/list/turfs = new/list()

@@ -83,6 +83,7 @@
 	item_state = "cage"
 	armor = list(MELEE = -15, BULLET = -10, LASER = -10, ENERGY = -5, BOMB = -5, BIO = -2, RAD = 0, FIRE = 0, ACID = 0)
 	slowdown = -0.1 //very statistically significant
+	flags_inv = null //doesn't actually visibly hide anything
 	worn_x_dimension = 64
 	worn_y_dimension = 64
 	dynamic_hair_suffix = ""
@@ -125,6 +126,7 @@
 	armor = list(MELEE = 40, BULLET = 10, LASER = 10, ENERGY = 5, BOMB = 10, BIO = 0, RAD = 0, FIRE = 0, ACID = 40) //Basically faster Dark Templar but you lose out on a lot of the non-melee armor
 	slowdown = 0.1
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
+	mutantrace_variation = MUTANTRACE_VARIATION
 
 /obj/item/clothing/head/helmet/chaplain/witchunter_hat
 	name = "witch hunter hat"
@@ -133,6 +135,7 @@
 	item_state = "witchhunterhat"
 	armor = list(MELEE = 30, BULLET = 5, LASER = 5, ENERGY = 0, BOMB = 5, BIO = 0, RAD = 0, FIRE = 0, ACID = 40)
 	slowdown = 0
+	flags_inv = HIDEEYES
 	flags_cover = HEADCOVERSEYES
 
 /obj/item/storage/box/holy/follower
